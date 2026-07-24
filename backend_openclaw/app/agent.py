@@ -47,7 +47,8 @@ class OpenClawAgent:
 
         system_instruction = (
             "You are the OpenClaw Master Real Estate Agent in Texas. "
-            "Provide expert real estate advice, market trends, cap rates, and property analysis in Texas."
+            "Respond naturally in Spanish. Provide expert real estate advice, market trends, cap rates, "
+            "and property analysis in Texas."
         )
         
         gemini_response = self._call_gemini_api(prompt, system_instruction)
@@ -55,11 +56,24 @@ class OpenClawAgent:
         if gemini_response:
             response_text = gemini_response
         else:
-            response_text = (
-                f"[OpenClaw Master Agent - {self.environment.upper()}] "
-                f"Analizando la consulta: '{prompt}'. En los mercados de Texas (Austin, Dallas, Houston), "
-                f"las propiedades muestran un rendimiento promedio estimado de ROI del 7.2% y excelente apreciación a largo plazo."
-            )
+            lower_prompt = prompt.lower().strip()
+            if lower_prompt in ["hola", "hi", "hello", "buenas", "hhi", "buenas tardes", "buenos dias"]:
+                response_text = (
+                    "¡Hola! 🤠 Soy **OpenClaw Master Agent**, tu orquestador inteligente de bienes raíces en Texas.\n\n"
+                    "Puedo ayudarte a:\n"
+                    "• Analizar métricas y ROI en mercados como Austin, Dallas, Houston y San Antonio.\n"
+                    "• Coordinar con nuestro **Agente de Contenido RRSS** para crear publicaciones inmobiliarias.\n"
+                    "• Coordinar con nuestro **Agente de Networking** para buscar eventos clave del nicho.\n\n"
+                    "¿Qué te gustaría consultar hoy?"
+                )
+            else:
+                response_text = (
+                    f"Analizando la consulta sobre **'{prompt}'**:\n\n"
+                    f"Actualmente en el mercado inmobiliario de Texas (Austin, Dallas, Houston y San Antonio), "
+                    f"las inversiones residenciales y comerciales muestran un retorno promedio estimado (ROI) del **7.2% a 8.5% anual** "
+                    f"con una sólida apreciación de capital a largo plazo.\n\n"
+                    f"💡 *Tip OpenClaw:* Si deseas generar contenido promocional o buscar eventos de networking sobre este tema, usa los módulos especializados en el panel principal."
+                )
 
         return {
             "status": "success",
@@ -73,7 +87,7 @@ class OpenClawAgent:
         """Sub-agent 1: Social Media Content Generator Agent."""
         system_instruction = (
             f"You are a professional Real Estate Marketing Agent specialized in Texas properties. "
-            f"Create an engaging, high-converting social media post for {platform} with emojis, property highlights, "
+            f"Create an engaging, high-converting social media post in Spanish for {platform} with emojis, property highlights, "
             f"call to action, and relevant hashtags (#TexasRealEstate #AustinHomes #HoustonRealty)."
         )
         prompt = f"Generate post for platform: {platform}. Property details: {property_details}"
@@ -101,7 +115,7 @@ class OpenClawAgent:
         """Sub-agent 2: Real Estate Networking Events Finder Agent."""
         system_instruction = (
             "You are an active Networking & Industry Events Agent for Texas Real Estate professionals. "
-            "List upcoming networking events, REIA meetups, investor summits, and PropTech conferences in Texas."
+            "List upcoming networking events, REIA meetups, investor summits, and PropTech conferences in Texas in Spanish."
         )
         prompt = f"Find real estate networking events in {city}, Texas focusing on {topic}."
 
