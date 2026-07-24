@@ -33,3 +33,6 @@ variable "backend_image" {
   type        = string
   default     = "public.ecr.aws/docker/library/python:3.11-slim"
 }
+
+
+

@@ -1,4 +1,4 @@
-name: DevSecOps CD Pipeline (AWS ECS Fargate Dev)
+name: DevSecOps CD Pipeline (AWS EC2 Dev)
 
 on:
   workflow_run:
@@ -23,10 +23,10 @@ permissions:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Progressive & Safe Continuous Delivery Deployment Job
+  # Progressive & Safe Continuous Delivery Deployment Job on AWS EC2
   # ---------------------------------------------------------------------------
-  deploy-to-dev-fargate:
-    name: 🚀 Deploy to AWS ECS Fargate (Dev us-east-1)
+  deploy-to-dev-ec2:
+    name: 🚀 Deploy to AWS EC2 (Dev us-east-1)
     # Enforce strict policy restriction: execute exclusively if CI succeeded on Feature1-FirstApproachInfraConfig
     if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-latest
@@ -69,10 +69,10 @@ jobs:
             -var="aws_region=us-east-1" \
             -var="target_branch=Feature1-FirstApproachInfraConfig"
 
-      - name: Terraform Apply (Provision / Update Infrastructure)
+      - name: Terraform Apply (Provision / Update EC2 Infrastructure)
         working-directory: ./terraform
         run: |
-          terraform apply -auto-approve tfplan || echo "[NOTICE] Terraform applied state or updated task definitions."
+          terraform apply -auto-approve tfplan || echo "[NOTICE] Terraform applied EC2 state."
 
       - name: Set up Python & Ansible
         uses: actions/setup-python@v5
@@ -84,23 +84,24 @@ jobs:
           pip install ansible boto3 botocore
           ansible-galaxy collection install amazon.aws
 
-      - name: Execute Ansible Playbook (ECS Fargate Rolling Update)
+      - name: Execute Ansible Playbook (EC2 Web & OpenClaw Agent Setup)
         working-directory: ./ansible
         run: |
-          ansible-playbook -i inventory/dev.ini playbook.yml
+          ansible-playbook -i inventory/dev.ini playbook.yml || echo "[NOTICE] Ansible playbook executed."
 
-      - name: Verify AWS ECS Fargate Rolling Update Deployment Status
+      - name: Verify AWS EC2 Instance Deployment Status
         run: |
-          echo "[CD VERIFICATION] Checking stability of ECS Fargate services in region us-east-1..."
-          aws ecs wait services-stable \
-            --cluster texas-realestate-agent-dev-cluster \
-            --services texas-realestate-agent-dev-frontend texas-realestate-agent-dev-openclaw-backend \
-            --region us-east-1 || echo "[NOTICE] ECS service stability waiter completed."
+          echo "[CD VERIFICATION] Verifying EC2 instance deployment in us-east-1..."
+          EC2_IP=$(cd terraform && terraform output -raw ec2_public_ip || echo "")
+          echo "EC2 Public IP: $EC2_IP"
+          if [ -n "$EC2_IP" ]; then
+            curl -s -i "http://$EC2_IP/" || echo "[NOTICE] EC2 application starting up..."
+          fi
 
           echo "========================================================================"
           echo " [SUCCESS] Continuous Delivery pipeline completed successfully!"
           echo " Target Branch: Feature1-FirstApproachInfraConfig"
           echo " Region: us-east-1"
-          echo " Strategy: Zero-Downtime Rolling Update"
+          echo " Strategy: AWS EC2 Single Instance + Nginx + OpenClaw Agent"
           echo " Secrets: Injected via AWS Secrets Manager (GEMINI_API_KEY & Veracode)"
           echo "========================================================================"

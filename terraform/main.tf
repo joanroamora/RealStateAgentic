@@ -26,14 +26,11 @@ module "secrets" {
   project_name = var.project_name
 }
 
-module "ecs_fargate" {
-  source             = "./modules/ecs_fargate"
-  environment        = var.environment
-  project_name       = var.project_name
-  vpc_id             = module.vpc.vpc_id
-  public_subnet_ids  = module.vpc.public_subnet_ids
-  private_subnet_ids = module.vpc.private_subnet_ids
-  gemini_secret_arn  = module.secrets.gemini_secret_arn
-  frontend_image     = var.frontend_image
-  backend_image      = var.backend_image
+module "ec2" {
+  source           = "./modules/ec2"
+  environment      = var.environment
+  project_name     = var.project_name
+  vpc_id           = module.vpc.vpc_id
+  public_subnet_id = module.vpc.public_subnet_ids[0]
+  instance_type    = "t3.micro"
 }

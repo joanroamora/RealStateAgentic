@@ -1,8 +1,9 @@
 # AWS Secrets Manager Module for DevSecOps Secret Management
 
 resource "aws_secretsmanager_secret" "gemini_api" {
-  name        = "${var.environment}/${var.project_name}/gemini-api-key"
-  description = "Gemini API Token for OpenClaw Real Estate Agent in ${var.environment}"
+  name                    = "${var.environment}/${var.project_name}/gemini-api-key-v2"
+  description             = "Gemini API Token for OpenClaw Real Estate Agent in ${var.environment}"
+  recovery_window_in_days = 0
 
   tags = {
     Environment = var.environment
@@ -12,7 +13,7 @@ resource "aws_secretsmanager_secret" "gemini_api" {
 }
 
 resource "aws_secretsmanager_secret_version" "gemini_api_val" {
-  secret_id     = aws_secretsmanager_secret.gemini_api.id
+  secret_id = aws_secretsmanager_secret.gemini_api.id
   secret_string = jsonencode({
     GEMINI_API_KEY = "DUMMY_SECRET_MANAGED_BY_AWS_SECRETS_MANAGER"
   })
@@ -23,8 +24,9 @@ resource "aws_secretsmanager_secret_version" "gemini_api_val" {
 }
 
 resource "aws_secretsmanager_secret" "veracode_creds" {
-  name        = "${var.environment}/${var.project_name}/veracode-credentials"
-  description = "Veracode SAST/SCA API Credentials for DevSecOps CI/CD"
+  name                    = "${var.environment}/${var.project_name}/veracode-credentials-v2"
+  description             = "Veracode SAST/SCA API Credentials for DevSecOps CI/CD"
+  recovery_window_in_days = 0
 
   tags = {
     Environment = var.environment
@@ -34,7 +36,7 @@ resource "aws_secretsmanager_secret" "veracode_creds" {
 }
 
 resource "aws_secretsmanager_secret_version" "veracode_creds_val" {
-  secret_id     = aws_secretsmanager_secret.veracode_creds.id
+  secret_id = aws_secretsmanager_secret.veracode_creds.id
   secret_string = jsonencode({
     VERACODE_API_KEY_ID     = "DUMMY_VERACODE_ID",
     VERACODE_API_KEY_SECRET = "DUMMY_VERACODE_SECRET"

@@ -16,14 +16,11 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Set permissions for static assets
 RUN chown -R nginx:nginx /usr/share/nginx/html
 
-# Expose HTTP port 8080 (unprivileged)
-EXPOSE 8080
-
-# Run as non-root user
-USER nginx
+# Expose HTTP port 80
+EXPOSE 80
 
 # Container healthcheck
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

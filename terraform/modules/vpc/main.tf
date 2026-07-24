@@ -78,23 +78,6 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
-# Elastic IP for NAT Gateway
-resource "aws_eip" "nat_eip" {
-  domain     = "vpc"
-  depends_on = [aws_internet_gateway.gw]
-}
-
-# NAT Gateway for Private Subnets (Outbound Internet for OpenClaw Gemini API calls)
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public_1.id
-
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-nat"
-    Environment = var.environment
-  }
-}
-
 # Public Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
@@ -112,11 +95,6 @@ resource "aws_route_table" "public" {
 # Private Route Table
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat.id
-  }
 
   tags = {
     Name = "${var.project_name}-${var.environment}-private-rt"

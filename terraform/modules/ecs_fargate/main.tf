@@ -1,4 +1,15 @@
-# AWS ECS Fargate Infrastructure for Frontend and OpenClaw Private Backend
+# AWS ECR Repositories for Frontend and OpenClaw Backend (Managed by Terraform)
+resource "aws_ecr_repository" "frontend" {
+  name                 = "texas-realestate-frontend"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+}
+
+resource "aws_ecr_repository" "backend" {
+  name                 = "texas-realestate-backend-openclaw"
+  image_tag_mutability = "MUTABLE"
+  force_delete         = true
+}
 
 resource "aws_ecs_cluster" "cluster" {
   name = "${var.project_name}-${var.environment}-cluster"
@@ -89,6 +100,13 @@ resource "aws_security_group" "frontend_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -137,7 +155,7 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "frontend_tg" {
-  name        = "tx-re-dev-frontend-tg"
+  name        = "tx-re-dev-frontend-tg-v3"
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -189,7 +207,7 @@ resource "aws_ecs_task_definition" "frontend" {
 }
 
 resource "aws_ecs_service" "frontend" {
-  name                               = "${var.project_name}-${var.environment}-frontend"
+  name                               = "${var.project_name}-${var.environment}-frontend-v3"
   cluster                            = aws_ecs_cluster.cluster.id
   task_definition                    = aws_ecs_task_definition.frontend.arn
   desired_count                      = 2
@@ -206,10 +224,36 @@ resource "aws_ecs_service" "frontend" {
   load_balancer {
     target_group_arn = aws_lb_target_group.frontend_tg.arn
     container_name   = "frontend"
-    container_port   = 80
+    container_port   = 8080
   }
 
   depends_on = [aws_lb_listener.http]
+}
+
+# Private Service Discovery for OpenClaw Backend
+resource "aws_service_discovery_private_dns_namespace" "internal" {
+  name        = "internal"
+  description = "Private DNS namespace for internal microservices"
+  vpc         = var.vpc_id
+}
+
+resource "aws_service_discovery_service" "backend" {
+  name = "openclaw-backend"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.internal.id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
 }
 
 # OpenClaw Backend Task Definition & Service (Private Subnets)
@@ -259,5 +303,9 @@ resource "aws_ecs_service" "backend" {
     subnets          = var.private_subnet_ids
     security_groups  = [aws_security_group.backend_sg.id]
     assign_public_ip = false
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.backend.arn
   }
 }
