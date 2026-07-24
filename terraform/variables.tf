@@ -23,13 +23,13 @@ variable "target_branch" {
 }
 
 variable "frontend_image" {
-  description = "Docker image URI for Frontend"
+  description = "Docker image URI for Frontend Worker Container"
   type        = string
-  default     = "ghcr.io/texas-realestate/frontend:latest"
+  default     = "public.ecr.aws/docker/library/nginx:alpine"
 }
 
 variable "backend_image" {
-  description = "Docker image URI for OpenClaw Backend"
+  description = "Docker image URI for OpenClaw Backend Container"
   type        = string
-  default     = "ghcr.io/texas-realestate/backend-openclaw:latest"
+  default     = "public.ecr.aws/docker/library/python:3.11-slim"
 }

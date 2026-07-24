@@ -85,14 +85,14 @@ resource "aws_security_group" "alb_sg" {
 
 resource "aws_security_group" "frontend_sg" {
   name        = "${var.project_name}-${var.environment}-frontend-sg"
-  description = "Allow HTTP traffic from ALB to Frontend"
+  description = "Allow HTTP traffic from ALB and direct Public IP to Frontend Worker"
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -138,7 +138,7 @@ resource "aws_lb" "alb" {
 
 resource "aws_lb_target_group" "frontend_tg" {
   name        = "tx-re-dev-frontend-tg"
-  port        = 8080
+  port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
@@ -180,8 +180,8 @@ resource "aws_ecs_task_definition" "frontend" {
       essential = true
       portMappings = [
         {
-          containerPort = 8080
-          hostPort      = 8080
+          containerPort = 80
+          hostPort      = 80
         }
       ]
     }
@@ -206,7 +206,7 @@ resource "aws_ecs_service" "frontend" {
   load_balancer {
     target_group_arn = aws_lb_target_group.frontend_tg.arn
     container_name   = "frontend"
-    container_port   = 8080
+    container_port   = 80
   }
 
   depends_on = [aws_lb_listener.http]
