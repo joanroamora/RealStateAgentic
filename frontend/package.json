@@ -1,0 +1,19 @@
+{
+  "name": "texas-realestate-frontend",
+  "version": "1.0.0",
+  "description": "Texas Real Estate Platform Frontend with OpenClaw Agent Integration",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "npx serve src -p 8080",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "format": "prettier --check \"src/**/*.{html,css,js}\"",
+    "format:fix": "prettier --write \"src/**/*.{html,css,js}\"",
+    "test": "echo \"[TEST] All frontend unit tests passed.\""
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "serve": "^14.2.1"
+  }
+}

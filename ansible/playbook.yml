@@ -1,0 +1,6 @@
+---
+- name: DevSecOps Post-Provisioning & Continuous Deployment for Texas Real Estate Agent
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - ecs_deploy

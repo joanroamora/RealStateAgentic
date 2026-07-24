@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Git Commit Message Validation Hook for DevSecOps Governance
+# Strictly enforces commit message prefixes: feature/, fix/, or agentcore/
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(head -n 1 "$COMMIT_MSG_FILE")
+
+# Regular expression pattern for required prefixes
+PATTERN="^(feature\/|fix\/|agentcore\/)"
+
+if [[ ! "$COMMIT_MSG" =~ $PATTERN ]]; then
+    echo "========================================================================"
+    echo " [ERROR] INVALID COMMIT MESSAGE FORMAT!"
+    echo "========================================================================"
+    echo " Your commit message was: '$COMMIT_MSG'"
+    echo ""
+    echo " Rules:"
+    echo "   Every commit message MUST start with one of the following prefixes:"
+    echo "     - feature/   (e.g., 'feature/add-vpc-terraform-module')"
+    echo "     - fix/       (e.g., 'fix/ecs-task-definition-secrets')"
+    echo "     - agentcore/ (e.g., 'agentcore/implement-openclaw-gemini-handler')"
+    echo "========================================================================"
+    exit 1
+fi
+
+echo "[SUCCESS] Commit message format validated: '$COMMIT_MSG'"
+exit 0

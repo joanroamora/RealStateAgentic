@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoneStar Realty AI | Premium Texas Real Estate & OpenClaw Agent</title>
+  <meta name="description" content="Next-Generation Texas Real Estate Intelligence platform powered by OpenClaw AI on AWS ECS Fargate." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Background Glow & Grid -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <span class="logo-icon">🤠</span>
+        <span class="logo-text">LoneStar<span class="highlight">Realty AI</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#properties" class="active">Properties</a>
+        <a href="#analytics">Market Insights</a>
+        <a href="#openclaw">OpenClaw Agent</a>
+      </nav>
+      <div class="nav-actions">
+        <span class="env-badge">DEV us-east-1</span>
+        <button id="open-agent-btn" class="btn btn-primary">⚡ Ask OpenClaw AI</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="badge-tag">🔒 Secured on AWS ECS Fargate (Private Subnet Agent)</div>
+      <h1>Texas Real Estate Intelligence <br /><span class="gradient-text">Powered by AI Agents</span></h1>
+      <p>Discover premier residential & commercial properties in Austin, Dallas, Houston, and San Antonio with real-time valuation intelligence.</p>
+      
+      <!-- Filter Bar -->
+      <div class="search-box glass-card">
+        <div class="filter-group">
+          <label for="city-select">Texas Market</label>
+          <select id="city-select">
+            <option value="all">All Markets</option>
+            <option value="austin">Austin, TX</option>
+            <option value="dallas">Dallas, TX</option>
+            <option value="houston">Houston, TX</option>
+            <option value="san_antonio">San Antonio, TX</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="price-select">Price Range</label>
+          <select id="price-select">
+            <option value="all">Any Price</option>
+            <option value="500k">$300k - $600k</option>
+            <option value="1m">$600k - $1.2M</option>
+            <option value="2m+">$1.2M+</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="type-select">Property Type</label>
+          <select id="type-select">
+            <option value="all">All Types</option>
+            <option value="luxury">Luxury Estate</option>
+            <option value="modern">Modern Condo</option>
+            <option value="ranch">Texas Ranch</option>
+          </select>
+        </div>
+        <button id="search-btn" class="btn btn-gradient">Search Properties</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Properties Grid -->
+  <main class="container" id="properties">
+    <div class="section-header">
+      <h2>Featured Texas Properties</h2>
+      <p>Real-time telemetry and valuation scores analyzed by OpenClaw Agent.</p>
+    </div>
+
+    <div class="properties-grid" id="properties-container">
+      <!-- Property cards populated via app.js -->
+    </div>
+  </main>
+
+  <!-- OpenClaw Agent Chat Drawer Modal -->
+  <div id="agent-drawer" class="drawer">
+    <div class="drawer-overlay" id="drawer-overlay"></div>
+    <div class="drawer-content glass-card">
+      <div class="drawer-header">
+        <div class="agent-title">
+          <span class="agent-avatar">🤖</span>
+          <div>
+            <h3>OpenClaw AI Advisor</h3>
+            <span class="agent-status"><span class="status-dot"></span> Active in Private Subnet</span>
+          </div>
+        </div>
+        <button id="close-agent-btn" class="btn-close">&times;</button>
+      </div>
+
+      <div class="drawer-body" id="chat-messages">
+        <div class="chat-message agent">
+          <div class="msg-bubble">
+            Howdy! I am your OpenClaw AI agent running securely inside AWS Fargate. Ask me about ROI estimates, property valuations, or neighborhood analytics in Texas!
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-footer">
+        <form id="chat-form" class="chat-input-wrapper">
+          <input type="text" id="chat-input" placeholder="Ask about property valuation, Austin tech housing trends..." autocomplete="off" />
+          <button type="submit" class="btn btn-primary btn-icon">Send 🚀</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <p>&copy; 2026 LoneStar Realty Agentic Platform | Branch: <code>Feature1-FirstApproachInfraConfig</code></p>
+      <div class="footer-badges">
+        <span>DevSecOps Compliant</span> • 
+        <span>AWS ECS Fargate</span> • 
+        <span>Terraform & Ansible Managed</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

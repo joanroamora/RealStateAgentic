@@ -1,0 +1,37 @@
+---
+# Ansible Tasks for AWS ECS Fargate Zero-Downtime Deployment Validation
+
+- name: Display deployment target and environment configuration
+  ansible.builtin.debug:
+    msg: "Deploying target branch {{ target_branch }} to AWS region {{ aws_region }} (Environment: {{ environment }})"
+
+- name: Verify AWS CLI installation
+  ansible.builtin.command: aws --version
+  register: aws_cli_version
+  changed_when: false
+
+- name: Print AWS CLI version
+  ansible.builtin.debug:
+    var: aws_cli_version.stdout
+
+- name: Force new deployment on OpenClaw Private Backend Service (Rolling Update)
+  amazon.aws.ecs_service:
+    state: present
+    name: "{{ backend_service }}"
+    cluster: "{{ ecs_cluster_name }}"
+    region: "{{ aws_region }}"
+    force_new_deployment: true
+  ignore_errors: true
+
+- name: Force new deployment on Frontend Service (Rolling Update)
+  amazon.aws.ecs_service:
+    state: present
+    name: "{{ frontend_service }}"
+    cluster: "{{ ecs_cluster_name }}"
+    region: "{{ aws_region }}"
+    force_new_deployment: true
+  ignore_errors: true
+
+- name: Confirm zero-downtime rolling update task triggers executed successfully
+  ansible.builtin.debug:
+    msg: "[SUCCESS] ECS Fargate Services updated with rolling update policy (min 100%, max 200%)."

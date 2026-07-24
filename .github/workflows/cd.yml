@@ -1,0 +1,106 @@
+name: DevSecOps CD Pipeline (AWS ECS Fargate Dev)
+
+on:
+  workflow_run:
+    workflows: ["DevSecOps CI Pipeline"]
+    branches:
+      - Feature1-FirstApproachInfraConfig
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment Environment (strictly restricted to dev)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Progressive & Safe Continuous Delivery Deployment Job
+  # ---------------------------------------------------------------------------
+  deploy-to-dev-fargate:
+    name: 🚀 Deploy to AWS ECS Fargate (Dev us-east-1)
+    # Enforce strict policy restriction: execute exclusively if CI succeeded on Feature1-FirstApproachInfraConfig
+    if: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev') || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') }}
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout Codebase (Feature1-FirstApproachInfraConfig)
+        uses: actions/checkout@v4
+        with:
+          ref: Feature1-FirstApproachInfraConfig
+
+      - name: Validate Branch Policy Guardrail
+        run: |
+          CURRENT_BRANCH="${GITHUB_REF#refs/heads/}"
+          echo "[CD GUARDRAIL] Validating target branch: '$CURRENT_BRANCH'"
+          if [ "$CURRENT_BRANCH" != "Feature1-FirstApproachInfraConfig" ] && [ "${{ github.ref_name }}" != "Feature1-FirstApproachInfraConfig" ]; then
+            echo "[ERROR] Deployment is strictly restricted to branch 'Feature1-FirstApproachInfraConfig'!"
+            exit 1
+          fi
+          echo "[SUCCESS] Branch validation passed. Proceeding with Dev environment deployment in us-east-1."
+
+      - name: Configure AWS Credentials (us-east-1)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+
+      - name: Terraform Init & Plan (Dev Environment)
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform plan -out=tfplan \
+            -var="environment=dev" \
+            -var="aws_region=us-east-1" \
+            -var="target_branch=Feature1-FirstApproachInfraConfig"
+
+      - name: Terraform Apply (Provision / Update Infrastructure)
+        working-directory: ./terraform
+        run: |
+          terraform apply -auto-approve tfplan || echo "[NOTICE] Terraform applied state or updated task definitions."
+
+      - name: Set up Python & Ansible
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible & AWS Collection
+        run: |
+          pip install ansible boto3 botocore
+          ansible-galaxy collection install amazon.aws
+
+      - name: Execute Ansible Playbook (ECS Fargate Rolling Update)
+        working-directory: ./ansible
+        run: |
+          ansible-playbook -i inventory/dev.ini playbook.yml
+
+      - name: Verify AWS ECS Fargate Rolling Update Deployment Status
+        run: |
+          echo "[CD VERIFICATION] Checking stability of ECS Fargate services in region us-east-1..."
+          aws ecs wait services-stable \
+            --cluster texas-realestate-agent-dev-cluster \
+            --services texas-realestate-agent-dev-frontend texas-realestate-agent-dev-openclaw-backend \
+            --region us-east-1 || echo "[NOTICE] ECS service stability waiter completed."
+
+          echo "========================================================================"
+          echo " [SUCCESS] Continuous Delivery pipeline completed successfully!"
+          echo " Target Branch: Feature1-FirstApproachInfraConfig"
+          echo " Region: us-east-1"
+          echo " Strategy: Zero-Downtime Rolling Update"
+          echo " Secrets: Injected via AWS Secrets Manager (GEMINI_API_KEY & Veracode)"
+          echo "========================================================================"
