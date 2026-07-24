@@ -70,9 +70,7 @@ resource "aws_instance" "web" {
               #!/bin/bash
               set -e
               apt-get update -y
-              apt-get install -y docker.io docker-compose git nginx python3-pip
-              systemctl enable docker
-              systemctl start docker
+              apt-get install -y git nginx python3 python3-pip python3-venv
 
               # Clone application repository on EC2
               mkdir -p /app
@@ -109,11 +107,31 @@ resource "aws_instance" "web" {
 
               systemctl restart nginx
 
-              # Launch OpenClaw FastAPI Agent container or service on port 8000
-              if [ -f "/app/backend_openclaw/Dockerfile" ]; then
+              # Setup OpenClaw Python virtual environment & Systemd Service
+              if [ -d "/app/backend_openclaw" ]; then
                 cd /app/backend_openclaw
-                docker build -t openclaw-backend:latest .
-                docker run -d --restart always -p 127.0.0.1:8000:8000 --name openclaw-agent openclaw-backend:latest
+                python3 -m venv venv
+                ./venv/bin/pip install --upgrade pip
+                ./venv/bin/pip install fastapi uvicorn pydantic requests
+
+                cat <<'SERVICE' > /etc/systemd/system/openclaw.service
+              [Unit]
+              Description=OpenClaw FastAPI Multi-Agent Service
+              After=network.target
+
+              [Service]
+              User=root
+              WorkingDirectory=/app/backend_openclaw
+              ExecStart=/app/backend_openclaw/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+              Restart=always
+
+              [Install]
+              WantedBy=multi-user.target
+              SERVICE
+
+                systemctl daemon-reload
+                systemctl enable openclaw
+                systemctl start openclaw
               fi
               EOF
 
