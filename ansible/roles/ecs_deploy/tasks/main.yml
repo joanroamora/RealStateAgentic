@@ -15,22 +15,16 @@
     var: aws_cli_version.stdout
 
 - name: Force new deployment on OpenClaw Private Backend Service (Rolling Update)
-  amazon.aws.ecs_service:
-    state: present
-    name: "{{ backend_service }}"
-    cluster: "{{ ecs_cluster_name }}"
-    region: "{{ aws_region }}"
-    force_new_deployment: true
-  ignore_errors: true
+  ansible.builtin.shell: |
+    aws ecs update-service --cluster {{ ecs_cluster_name }} --service {{ backend_service }} --force-new-deployment --region {{ aws_region }}
+  register: backend_deploy_res
+  changed_when: backend_deploy_res.rc == 0
 
 - name: Force new deployment on Frontend Service (Rolling Update)
-  amazon.aws.ecs_service:
-    state: present
-    name: "{{ frontend_service }}"
-    cluster: "{{ ecs_cluster_name }}"
-    region: "{{ aws_region }}"
-    force_new_deployment: true
-  ignore_errors: true
+  ansible.builtin.shell: |
+    aws ecs update-service --cluster {{ ecs_cluster_name }} --service {{ frontend_service }} --force-new-deployment --region {{ aws_region }}
+  register: frontend_deploy_res
+  changed_when: frontend_deploy_res.rc == 0
 
 - name: Confirm zero-downtime rolling update task triggers executed successfully
   ansible.builtin.debug:

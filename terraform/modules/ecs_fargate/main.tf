@@ -125,7 +125,7 @@ resource "aws_security_group" "backend_sg" {
 
 # Application Load Balancer
 resource "aws_lb" "alb" {
-  name               = "${var.project_name}-${var.environment}-alb"
+  name               = "tx-re-dev-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
@@ -137,7 +137,7 @@ resource "aws_lb" "alb" {
 }
 
 resource "aws_lb_target_group" "frontend_tg" {
-  name        = "${var.project_name}-${var.environment}-frontend-tg"
+  name        = "tx-re-dev-frontend-tg"
   port        = 8080
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
